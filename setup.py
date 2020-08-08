@@ -25,6 +25,7 @@ REQ_BASE = [
     'Marshmallow',
     'Pony',
     'python-dotenv',
+    'psycopg2-binary',
 ]
 
 REQ_TEST = [
@@ -61,7 +62,7 @@ setup(
     package_dir={'': 'src'},
     include_package_data=True,
     zip_safe=False,
-    url='http://github.com/zgoda',
+    url='http://github.com/zgoda/paxful-backend',
     install_requires=REQ_BASE,
     tests_require=REQ_TEST,
     extras_require={
