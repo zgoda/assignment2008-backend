@@ -1,12 +1,11 @@
 import os
 
-from pony.orm import Database, Optional, Required, Set
+from pony.orm import Database, Required, Set
 
 db = Database()
 
 
 class User(db.Entity):
-    name = Optional(str)
     token = Required(str, 200, unique=True)
     wallets = Set('Wallet')
 

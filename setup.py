@@ -71,7 +71,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'backend=backend.cli:main',
+            'runbackend=backend.cli:serve',
         ],
     },
     python_requires='~=3.7',
