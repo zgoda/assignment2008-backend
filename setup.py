@@ -26,6 +26,7 @@ REQ_BASE = [
     'Pony',
     'python-dotenv',
     'psycopg2-binary',
+    'requests',
 ]
 
 REQ_TEST = [

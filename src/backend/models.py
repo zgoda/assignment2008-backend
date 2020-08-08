@@ -17,6 +17,11 @@ class Wallet(db.Entity):
     transactions_in = Set('Transaction', reverse='tgt_wallet')
     transactions_out = Set('Transaction', reverse='src_wallet')
 
+    def balance_values(self):
+        return {
+            'BTC': self.balance * 100000000,
+        }
+
 
 class Transaction(db.Entity):
     src_wallet = Required(Wallet, reverse='transactions_out')
