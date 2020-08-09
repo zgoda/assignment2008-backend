@@ -22,7 +22,6 @@ def find_version(*where):
 
 REQ_BASE = [
     'Falcon',
-    'Marshmallow',
     'Pony',
     'python-dotenv',
     'psycopg2-binary',

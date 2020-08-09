@@ -3,6 +3,8 @@ import os
 from dotenv import find_dotenv, load_dotenv
 from pony.orm import Database, Required, Set
 
+from .platform import get_rate
+
 db = Database()
 
 
@@ -18,10 +20,13 @@ class Wallet(db.Entity):
     transactions_in = Set('Transaction', reverse='tgt_wallet')
     transactions_out = Set('Transaction', reverse='src_wallet')
 
-    def balance_values(self):
-        return {
-            'BTC': self.balance * 100000000,
-        }
+    @property
+    def balance_btc(self):
+        return self.balance / 100000000
+
+    @property
+    def balance_usd(self):
+        return self.balance * get_rate()
 
 
 class Transaction(db.Entity):
