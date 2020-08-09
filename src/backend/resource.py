@@ -1,15 +1,19 @@
 import json
 import uuid
 import datetime
+import logging
 from decimal import Decimal
 
 import falcon
 import requests
+from requests.exceptions import Timeout, HTTPError
 from falcon import Request, Response
-from pony.orm import db_session, select
+from pony.orm import db_session
 
 from .models import User, Wallet
 from .hooks import require_auth
+
+log = logging.getLogger(__name__)
 
 
 class Ticker:
@@ -22,28 +26,34 @@ class Ticker:
     session = requests.Session()
 
     @classmethod
-    def get(cls, currency):
+    def get(cls):
         now = datetime.datetime.utcnow()
         if (
                 None in (cls.last_fetch, cls.rates['USD']) or
                 now > cls.last_fetch + datetime.timedelta(hours=1)
                 ):
-            resp = cls.session.get(cls.url)
-            if resp.ok:
-                data = resp.json()
-                cls.rates['USD'] = Decimal(str(data['USD']['last']))
-                cls.last_fetch = now
-        return cls.rates['USD'] / 100000000
+            try:
+                resp = cls.session.get(cls.url, timeout=(3.05, 9))
+                if resp.ok:
+                    data = resp.json()
+                    cls.rates['USD'] = Decimal(str(data['USD']['last']))
+                    cls.last_fetch = now
+                else:
+                    resp.raise_for_status()
+            except Timeout:
+                log.warning('exchange rates fetch timed out')
+            except HTTPError as e:
+                code = e.response.status_code
+                log.warning(f'ticker service response {code}')
+        if cls.rates['USD']:
+            return cls.rates['USD'] / 100000000
 
 
 class UserCollectionResource:
 
     @db_session
     def on_post(self, req: Request, resp: Response):
-        while True:
-            token = str(uuid.uuid4())
-            if not select(u.token for u in User if u.token == token).count():
-                break
+        token = str(uuid.uuid4())
         User(token=token)
         resp.body = json.dumps({'token': token})
         resp.status = falcon.HTTP_201
@@ -66,20 +76,13 @@ class WalletCollectionResource:
                 'Max allowed wallets exceeded',
                 'Maximum number of allowed wallets already reached',
             )
-        while True:
-            address = str(uuid.uuid4())
-            if not select(
-                        w.address
-                        for w in Wallet
-                        if w.user == user and w.address == address
-                    ).count():
-                break
+        address = str(uuid.uuid4())
         wallet = Wallet(user=user, address=address)
         resp.body = json.dumps({
             'address': address,
             'balance': {
                 'BTC': wallet.balance / 100000000,
-                'USD': float(self.ticker.get('USD') * 100000000),
+                'USD': float(self.ticker.get() * 100000000),
             }
         })
 

@@ -1,5 +1,6 @@
 import os
 
+from dotenv import find_dotenv, load_dotenv
 from pony.orm import Database, Required, Set
 
 db = Database()
@@ -29,6 +30,8 @@ class Transaction(db.Entity):
     amount = Required(int)
     fee = Required(int, default=0)
 
+
+load_dotenv(find_dotenv())
 
 db.bind(
     provider='postgres', user=os.getenv('PGUSER'), password=os.getenv('PGPASSWORD'),

@@ -1,6 +1,5 @@
 from argparse import ArgumentParser
 
-from dotenv import find_dotenv, load_dotenv
 from werkzeug.serving import run_simple
 
 from .app import app
@@ -16,7 +15,6 @@ def get_options():
 
 
 def serve():
-    load_dotenv(find_dotenv())
     opts = get_options()
     run_simple(
         opts.bind, opts.port, app,
