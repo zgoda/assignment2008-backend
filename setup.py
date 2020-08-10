@@ -30,6 +30,8 @@ REQ_BASE = [
 
 REQ_TEST = [
     'pytest',
+    'responses',
+    'pytest-mock',
     'pytest-cov',
 ]
 

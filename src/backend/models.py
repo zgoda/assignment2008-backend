@@ -10,6 +10,7 @@ db = Database()
 
 
 class User(db.Entity):
+    _table_ = 'users'
     token = Required(str, 200, unique=True)
     wallets = Set('Wallet')
 

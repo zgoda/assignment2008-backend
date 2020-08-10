@@ -31,8 +31,7 @@ class WalletCollectionResource:
 
     @db_session
     def on_post(self, req: Request, resp: Response):
-        token = req.get_header('Authorization')
-        user = User.select(lambda u: u.token == token).first()
+        user = select(u for u in User if u.token == req.auth).first()
         if user.wallets.count() > 9:
             raise falcon.HTTPForbidden(
                 'Max allowed wallets exceeded',
@@ -57,9 +56,8 @@ class WalletResource:
 
     @db_session
     def on_get(self, req: Request, resp: Response, address: str):
-        token = req.get_header('Authorization')
-        wallet = Wallet.select(
-            lambda w: w.address == address and w.user.token == token
+        wallet = select(
+            w for w in Wallet if w.address == address and w.user.token == req.auth
         ).first()
         if not wallet:
             raise falcon.HTTPNotFound()
@@ -81,11 +79,12 @@ class TransactionCollectionResource:
     @db_session
     def on_get(self, req: Request, resp: Response):
         token = req.get_header('Authorization')
-        transactions = Transaction.select(
-            lambda t: (
+        transactions = list(
+            select(
+                t for t in Transaction if
                 t.src_wallet.user.token == token or t.tgt_wallet.user.token == token
             )
-        )[:]
+        )
         resp.body = json.dumps([
             {
                 'amount': t.amount,
