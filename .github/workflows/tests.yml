@@ -34,6 +34,7 @@ jobs:
       - name: Initialize PostgreSQL database
         run: |
           psql -c "create user test createdb password 'test'"
+          psql -c "create database test owner test encoding 'UTF-8'"
         env:
           PGUSER: postgres
           PGHOST: localhost
