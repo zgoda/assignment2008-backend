@@ -43,7 +43,7 @@ jobs:
           PGPORT: 5432
       - name: Test with pytest
         run: |
-          pytest --cov-branch --cov-report xml --cov backend tests
+          pytest --cov-branch --cov-report term-missing:skip-covered --cov backend tests
         env:
           PGUSER: test
           PGHOST: localhost
