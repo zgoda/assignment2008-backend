@@ -15,7 +15,7 @@ rates = {
 session = Session()
 
 
-def get_rate():
+def get_rate() -> Decimal:
     ticker_url = 'https://blockchain.info/ticker'
     now = datetime.datetime.utcnow()
     if (
@@ -36,3 +36,19 @@ def get_rate():
             code = e.response.status_code
             log.warning(f'ticker service response {code}')
     return rates['USD']
+
+
+class TransactionError(Exception):
+    pass
+
+
+class WalletNotFound(TransactionError):
+    pass
+
+
+class NotEnoughFunds(TransactionError):
+    pass
+
+
+def collect_transaction_fee(amount: Decimal):
+    pass
