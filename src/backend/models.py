@@ -39,12 +39,14 @@ class Transaction(db.Entity):
 
     @classmethod
     def make_transfer(cls, token: str, from_: str, to_: str, amount: int):
-        src_wallet = Wallet.select(
+        src_wallet = Wallet.select(  # pragma: no branch
             lambda w: w.address == from_ and w.user.token == token
         ).first()
         if not src_wallet:
             raise WalletNotFound(f'Wallet {from_} not found or is not yours')
-        tgt_wallet = Wallet.select(lambda w: w.address == to_).first()
+        tgt_wallet = Wallet.select(  # pragma: no branch
+            lambda w: w.address == to_
+        ).first()
         if not tgt_wallet:
             raise WalletNotFound(f'Wallet {to_} not found')
         fee = None

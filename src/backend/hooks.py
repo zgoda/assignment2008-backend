@@ -11,7 +11,7 @@ from .models import User
 def require_auth(req: Request, resp: Response, resource, params: dict):
     if not req.auth:
         raise falcon.HTTPUnauthorized('Missing token', 'Authorization token missing')
-    if not select(u for u in User if u.token == req.auth).first():
+    if not select(u for u in User if u.token == req.auth).first():  # pragma: no branch
         raise falcon.HTTPUnauthorized(
             'Invalid token', 'Provided token is not recognized as valid'
         )

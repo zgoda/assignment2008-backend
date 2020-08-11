@@ -15,6 +15,7 @@ def _setup_env(monkeypatch):
     monkeypatch.setenv('PGDATABASE', 'test')
     monkeypatch.setenv('PGUSER', 'test')
     monkeypatch.setenv('PGPASSWORD', 'test')
+    monkeypatch.setenv('ADMIN_TOKEN', 'admin')
 
 
 @pytest.fixture()

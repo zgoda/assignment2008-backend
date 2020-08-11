@@ -31,7 +31,9 @@ class WalletCollectionResource:
 
     @db_session
     def on_post(self, req: Request, resp: Response):
-        user = select(u for u in User if u.token == req.auth).first()
+        user = select(  # pragma: no branch
+            u for u in User if u.token == req.auth
+        ).first()
         if user.wallets.count() > 9:
             raise falcon.HTTPForbidden(
                 'Max allowed wallets exceeded',
@@ -56,7 +58,7 @@ class WalletResource:
 
     @db_session
     def on_get(self, req: Request, resp: Response, address: str):
-        wallet = select(
+        wallet = select(  # pragma: no branch
             w for w in Wallet if w.address == address and w.user.token == req.auth
         ).first()
         if not wallet:
@@ -78,17 +80,14 @@ class TransactionCollectionResource:
 
     @db_session
     def on_get(self, req: Request, resp: Response):
-        token = req.get_header('Authorization')
-        transactions = list(
-            select(
-                t for t in Transaction if
-                t.src_wallet.user.token == token or t.tgt_wallet.user.token == token
-            )
+        transactions = select(  # pragma: no branch
+            t for t in Transaction if
+            t.src_wallet.user.token == req.auth or t.tgt_wallet.user.token == req.auth
         )
         resp.body = json.dumps([
             {
-                'amount': t.amount,
-                'fee': t.fee,
+                'amount': float(t.amount),
+                'fee': float(t.fee),
                 'from': t.src_wallet.address,
                 'to': t.tgt_wallet.address
             } for t in transactions
@@ -99,10 +98,9 @@ class TransactionCollectionResource:
         from_addr = req.media.get('from')
         to_addr = req.media.get('to')
         amount = req.media.get('amount')
-        token = req.get_header('Authorization')
         error_resp = {}
         try:
-            Transaction.make_transfer(token, from_addr, to_addr, amount)
+            Transaction.make_transfer(req.auth, from_addr, to_addr, amount)
         except WalletNotFound as e:
             error_resp.update({
                 'code': 'WALLET_NOT_FOUND',
@@ -133,18 +131,20 @@ class WalletTransactionsCollectionResource:
 
     @db_session
     def on_get(self, req: Request, resp: Response, address: str):
-        token = req.get_header('Authorization')
-        transactions = Transaction.select(
+        transactions = Transaction.select(  # pragma: no branch
             lambda t: (
-                (t.src_wallet.user.token == token or t.tgt_wallet.user.token == token)
+                (
+                    t.src_wallet.user.token == req.auth or
+                    t.tgt_wallet.user.token == req.auth
+                )
                 and
                 (t.src_wallet.address == address or t.tgt_wallet.address == address)
             )
         )[:]
         resp.body = json.dumps([
             {
-                'amount': t.amount,
-                'fee': t.fee,
+                'amount': float(t.amount),
+                'fee': float(t.fee),
                 'from': t.src_wallet.address,
                 'to': t.tgt_wallet.address,
                 'type': 'OUT' if t.src_wallet.address == address else 'IN',
@@ -160,7 +160,7 @@ class StatisticsResource:
 
     @db_session
     def on_get(self, req: Request, resp: Response):
-        fees = select(sum(t.fee) for t in Transaction).first()
+        fees = select(sum(t.fee) for t in Transaction).first()  # pragma: no branch
         tr_count = Transaction.select().count()
         resp.body = json.dumps({
             'transactions': tr_count,
