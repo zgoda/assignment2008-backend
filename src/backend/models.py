@@ -1,5 +1,6 @@
 import os
 from decimal import Decimal
+from typing import Optional
 
 from dotenv import find_dotenv, load_dotenv
 from pony.orm import Database, Required, Set
@@ -23,12 +24,15 @@ class Wallet(db.Entity):
     transactions_out = Set('Transaction', reverse='src_wallet')
 
     @property
-    def balance_btc(self):
+    def balance_btc(self) -> Decimal:
         return self.balance / Decimal('100000000')
 
     @property
-    def balance_usd(self):
-        return self.balance * get_rate()
+    def balance_usd(self) -> Optional[Decimal]:
+        rate = get_rate()
+        if rate:
+            return self.balance * rate
+        return 'NaN'
 
 
 class Transaction(db.Entity):
@@ -39,6 +43,21 @@ class Transaction(db.Entity):
 
     @classmethod
     def make_transfer(cls, token: str, from_: str, to_: str, amount: int):
+        """Transfer funds between accounts.
+
+        :param token: owner of source wallet authorization token
+        :type token: str
+        :param from_: address of source wallet
+        :type from_: str
+        :param to_: address of target wallet
+        :type to_: str
+        :param amount: amount to transfer in satoshis
+        :type amount: int
+        :raises WalletNotFound: if either source or target wallet is not found
+        :raises NotEnoughFunds: if there's not enough funds in source wallet
+                                to make transfer of specified amount + platform
+                                fee
+        """
         src_wallet = Wallet.select(  # pragma: no branch
             lambda w: w.address == from_ and w.user.token == token
         ).first()

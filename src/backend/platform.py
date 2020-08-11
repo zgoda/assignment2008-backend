@@ -51,4 +51,9 @@ class NotEnoughFunds(TransactionError):
 
 
 def collect_transaction_fee(amount: Decimal):
+    """Stub to collect transaction fee.
+
+    :param amount: transaction fee
+    :type amount: Decimal
+    """
     pass

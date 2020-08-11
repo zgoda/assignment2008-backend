@@ -1,8 +1,8 @@
 import falcon
 
 from .resource import (
-    transaction_collection, user_collection, wallet_collection, wallet_item,
-    wallet_transactions_collection, statistics
+    statistics, transaction_collection, user_collection, wallet_collection, wallet_item,
+    wallet_transactions_collection,
 )
 
 app = falcon.API()

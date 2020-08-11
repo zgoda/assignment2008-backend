@@ -1,4 +1,5 @@
 from decimal import Decimal
+from math import isnan
 
 from pony.orm import db_session, select
 
@@ -35,6 +36,15 @@ def test_read(client, wallet, mocker):
     assert rv.json['address']
     assert rv.json['balance']['BTC'] == float(Decimal(1))
     assert rv.json['balance']['USD'] == float(rate * Decimal(100000000))
+
+
+def test_read_no_rate_available(client, wallet, mocker):
+    address, user = wallet
+    mocker.patch('backend.models.get_rate', mocker.Mock(return_value=None))
+    rv = client.simulate_get(f'/wallets/{address}', headers={'Authorization': user})
+    assert rv.json['address']
+    assert rv.json['balance']['BTC'] == float(Decimal(1))
+    assert isnan(rv.json['balance']['USD'])
 
 
 def test_read_not_found(client, wallet, mocker):
