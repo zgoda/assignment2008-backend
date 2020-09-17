@@ -1,4 +1,4 @@
 Demo backend
 ============
 
-Demonstration backend for Paxful recruitment process.
+Demonstration backend for recruitment process 2020-08.
